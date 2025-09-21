@@ -1,0 +1,105 @@
+---
+title: "p8105_hw1_fx2206"
+author: "Fei Xue"
+date: "2025-09-19"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,message = FALSE, warning = FALSE, fig.align = "center", fig.retina = 2)
+
+# Fix random seed for reproducibility (Problem 2)
+set.seed(123)
+```
+
+## R Markdown
+
+
+```{r}
+# Load packages
+library(tidyverse)
+library(moderndive)
+# Load the data from moderndive.
+data("early_january_weather")
+weather = early_january_weather
+```
+#Use inline R to describe the data
+
+There are `r nrow(weather)` rows and `r ncol(weather)` columns in `early_january_weather`.
+
+The variables are: `r paste(names(weather), collapse = ", ")`.
+All observations are from origin = `r unique(weather$origin)`, year = `r unique(weather$year)`, month = `r unique(weather$month)`. 
+The mean relative humidity is `r round(mean(weather$humid, na.rm = TRUE), 3)`.
+
+The mean temperature is `r round(mean(weather$temp, na.rm = TRUE), 2)`.
+
+```{r}
+# create plot and 'humid' is mapped to color
+temp_plot = ggplot(weather, aes(x = time_hour, y = temp, color = humid)) +
+  geom_point(alpha = 0.7) +
+  labs(
+    title = "NYC Early January Weather: Temperature vs Time",
+    x = "Time_hour",
+    y = "Temperature",
+    color = "Humidity"
+  ) +
+  theme_minimal()
+
+temp_plot
+```
+
+```{r}
+# create folder and save figures
+dir.create("figs", showWarnings = FALSE)
+ggsave("figs/temp_vs_time.png", plot = temp_plot, width = 8, height = 4.5, dpi = 300)
+```
+
+problem 2
+```{r}
+n = 10
+
+num_sample = rnorm(n) # numeric vector
+is_positive = num_sample > 0 # logical vector (TRUE/FALSE)
+char_vec = c("a","b","c","d","e","f","g","h","i","j")# character vector, length = 10
+fac_vec = factor(
+  rep(c("level_1","level_2","Level_3"), length.out = n),
+  levels = c("level_1","level_2","Level_3")
+) # factor with 3 levels
+
+toy_df = tibble(
+  num_sample,
+  is_positive,
+  char_vec,
+  fac_vec
+) # create data frame
+
+toy_df # print the data frame
+```
+
+```{r}
+mean_num  = mean(toy_df %>% pull(num_sample))   # works: numeric mean
+mean_logical = mean(toy_df %>% pull(is_positive))   # works: TRUE=1, FALSE=0 so proportion true
+mean_char = mean(toy_df %>% pull(char_vec))   # error: NA mean of character is undefined
+mean_fac = mean(toy_df %>% pull(fac_vec))   # error: NA mean of factor is undefined
+#list these mean
+list(
+  mean_num = mean_num,
+  mean_logical = mean_logical,
+  mean_char = mean_char,
+  mean_fac = mean_fac
+)
+```
+
+```{r}
+# Logical
+as_numeric_logical = as.numeric(toy_df$is_positive)
+
+# Character
+as_numeric_char = as.numeric(toy_df$char_vec)
+
+# Factor
+as_numeric_factor = as.numeric(toy_df$fac_vec)
+```
+Logical returns 0/1, so the mean is the proportion true.
+Character returns NA for non-numeric strings, so a mean is not computable.
+Factor returns the internal integer codes for levels, so the mean is not meaningful.
